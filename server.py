@@ -34,9 +34,10 @@ def main(argv):
         clientSock, addr = welcomeSock.accept()
         print("Client {} connected!\n".format(addr))
 
-        serverMessage = ""
 
         while True:
+            serverMessage = "SUCCESS"
+
             data = clientSock.recv(1024).decode()
             if not data:
                 break
@@ -44,9 +45,18 @@ def main(argv):
             print("Client says: {}".format(data))
 
             if str(data) == "quit":
-                serverMessage = "SUCCESS"
+                pass
+            elif str(data) == "ls":
+                # TODO: Implement ls cmd
+                pass
+            elif str(data) == "get":
+                # TODO: Implement ls cmd
+                pass
+            elif str(data) == "put":
+                # TODO: Implement ls cmd
+                pass
             else:
-                serverMessage = "FAILURE\n"
+                serverMessage = "FAILURE"
             
             clientSock.send(serverMessage.encode())
 
