@@ -15,7 +15,7 @@ listenPort = 5050
 listenServer = socket.gethostbyname(socket.gethostname())
 print("Server is listening on: ", listenServer)
 
-DISCONNECT_MESSAGE = 
+DISCONNECT_MESSAGE = 'quit'
 
 # Create a welcome socket. 
 welcomeSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -59,39 +59,41 @@ def recvAll(sock, numBytes):
 
 	return recvBuff
 		
+connected = True
+
 # Accept connections forever
-while True:
-	
+while connected:
+
 	print("Waiting for connections...")
-		
+
 	# Accept connections
 	clientSock, addr = welcomeSock.accept()
 
 	thread = threading.Thread(target=recvAll, args=(clientSock, addr))
 	thread.start()
-	
+
 	print("Active connections: ", threading.activeCount() - 1)
 	print("Accepted connection from client: ", addr)
 	print("\n")
-	
+
 	# The buffer to all data received from the
 	# the client.
 	fileData = ""
-	
+
 	# The temporary buffer to store the received
 	# data.
 	recvBuff = ""
-	
+
 	# The size of the incoming file
-	fileSize = 0	
-	
+	fileSize = 0
+
 	# The buffer containing the file size
 	fileSizeBuff = ""
-	
+
 	# Receive the first 10 bytes indicating the
 	# size of the file
 	fileSizeBuff = recvAll(clientSock, 10)
-		
+
 	if fileSizeBuff:
 
 		# Get the file size
@@ -103,6 +105,10 @@ while True:
 		fileData = recvAll(clientSock, fileSize)
 
 		print("The file data is:\n", '"', fileData, '"\n')
+
+		if fileData == DISCONNECT_MESSAGE:
+			print("Disconnecting connections...")
+			connected = False
 
 	# Close our side
 	clientSock.close()
