@@ -13,15 +13,20 @@ def main(argv):
 
     connSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     connSock.connect((serverAddr, serverPort))
+    serverMessage = ""
 
     while True:
         message = input("ftp> ")
 
         connSock.send(message.encode())
 
+        serverMessage = connSock.recv(1024).decode()
+        print("Server says: {}".format(serverMessage))
+
         if message.strip() == "quit":
-            data = connSock.recv(1024).decode()
             break
+        elif message.strip() == "ls":
+            pass
 
     connSock.close()
 

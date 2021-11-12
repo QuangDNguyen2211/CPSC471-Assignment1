@@ -45,7 +45,10 @@ def main(argv):
 
             if str(data) == "quit":
                 serverMessage = "SUCCESS"
-                clientSock.send(serverMessage.encode())
+            else:
+                serverMessage = "FAILURE\n"
+            
+            clientSock.send(serverMessage.encode())
 
         print("\nClient {} disconnected!\n".format(addr))
         clientSock.close()
