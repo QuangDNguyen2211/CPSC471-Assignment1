@@ -6,7 +6,6 @@
 # *****************************************************
 
 import socket
-import threading
 
 # The port on which to listen
 listenPort = 5050
@@ -15,6 +14,7 @@ listenPort = 5050
 listenServer = socket.gethostbyname(socket.gethostname())
 print("Server is listening on: ", listenServer)
 
+GET_MESSAGE = 'get'
 DISCONNECT_MESSAGE = 'quit'
 
 # Create a welcome socket. 
@@ -69,12 +69,7 @@ while connected:
 	# Accept connections
 	clientSock, addr = welcomeSock.accept()
 
-	thread = threading.Thread(target=recvAll, args=(clientSock, addr))
-	thread.start()
-
-	print("Active connections: ", threading.activeCount() - 1)
 	print("Accepted connection from client: ", addr)
-	print("\n")
 
 	# The buffer to all data received from the
 	# the client.
