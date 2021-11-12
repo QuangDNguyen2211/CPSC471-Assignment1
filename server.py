@@ -50,10 +50,10 @@ def main(argv):
                 # TODO: Implement ls cmd
                 pass
             elif str(data) == "get":
-                # TODO: Implement ls cmd
+                # TODO: Implement get cmd
                 pass
             elif str(data) == "put":
-                # TODO: Implement ls cmd
+                # TODO: Implement put cmd
                 pass
             else:
                 serverMessage = "FAILURE"
