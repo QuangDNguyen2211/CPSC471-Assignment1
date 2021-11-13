@@ -2,6 +2,22 @@
 
 import socket
 import sys
+import os
+
+FORMAT = 'utf-8'
+
+def recvAll(sock, numBytes):
+    recvBuff = ""
+    tmpBuff = ""
+
+    while len(recvBuff) < numBytes:
+        tmpBuff = sock.recv(numBytes).decode(FORMAT)
+        if not tmpBuff:
+            break
+
+        recvBuff += tmpBuff
+
+    return recvBuff
 
 def main(argv):
     if len(argv) != 3:
@@ -13,27 +29,54 @@ def main(argv):
 
     connSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     connSock.connect((serverAddr, serverPort))
-    serverMessage = ""
 
     while True:
-        message = input("ftp> ")
+        serverDataBuff = ""
+        serverDataSize = 0
+        serverData = ""
+        clientData = ""
 
-        connSock.send(message.strip().encode())
+        message = input("ftp> ").strip()
 
-        serverMessage = connSock.recv(1024).decode()
-        print("Server says: {}\n".format(serverMessage))
+        if message.startswith("put"):
+            fileName = message.replace("put", '').strip()
+            
+            if os.path.exists(fileName):
+                fileObj = open(fileName, "r")
+                clientData = message + "\n" + fileObj.read(65536)
+                fileObj.close()
+            else:
+                print("ERROR: {} does not exist!".format(fileName))
+                clientData = "Unsuccessful cmd -> {}".format(message) 
 
-        if message.strip() == "quit":
+        else:
+            clientData = message
+
+        dataSizeStr = str(len(clientData))
+
+        while len(dataSizeStr) < 10:
+            dataSizeStr = "0" + dataSizeStr
+
+        clientData = dataSizeStr + clientData
+        numSent = 0
+
+        while len(clientData) > numSent:
+            numSent += connSock.send(clientData[numSent:].encode(FORMAT))
+
+        serverDataBuff = recvAll(connSock, 10)
+        
+        if serverDataBuff:
+            serverDataSize = int(serverDataBuff)
+            serverData = recvAll(connSock, serverDataSize)
+
+            print(serverData)
+
+        if message == "quit":
             break
-        elif message.strip() == "ls":
-            # TODO: Implement ls cmd
-            pass
-        elif message.strip() == "get":
-            # TODO: Implement get cmd
-            pass
-        elif message.strip() == "put":
-            # TODO: Implement put cmd
-            pass
+        elif message.startswith("put"):
+            print("({} bytes transferred)\n".format(int(dataSizeStr)))
+        else:
+            print("\n({} bytes transferred)\n".format(int(serverDataSize)))
 
     connSock.close()
 

@@ -1,15 +1,20 @@
 #!/usr/bin/env python3
 
 import socket
+import subprocess
 import sys
+import os
+
+FORMAT = 'utf-8'
+GOOD_MSG = "COMMAND SUCCESS"
+BAD_MSG = "COMMAND FAILURE"
 
 def recvAll(sock, numBytes):
     recvBuff = ""
     tmpBuff = ""
 
     while len(recvBuff) < numBytes:
-        tmpBuff = sock.recv(numBytes)
-
+        tmpBuff = sock.recv(numBytes).decode(FORMAT)
         if not tmpBuff:
             break
 
@@ -34,35 +39,68 @@ def main(argv):
         clientSock, addr = welcomeSock.accept()
         print("Client {} connected!\n".format(addr))
 
-
         while True:
-            serverMessage = "SUCCESS"
+            clientDataBuff = ""
+            clientDataSize = 0
+            clientMessage = ""
+            serverData = ""
+            cmdResult = GOOD_MSG
 
-            data = clientSock.recv(1024).decode()
-            if not data:
-                break
+            clientDataBuff = recvAll(clientSock, 10)
+            clientDataSize = int(clientDataBuff)
 
-            print("Client says: {}".format(data))
+            clientMessage = str(recvAll(clientSock, clientDataSize))
 
-            if str(data) == "quit":
+            # Change value of server data to send based on client msg
+            if clientMessage == "quit":
+                serverData = "Goodbye!"
                 pass
-            elif str(data) == "ls":
-                # TODO: Implement ls cmd
+
+            elif clientMessage == "ls":
+                data = subprocess.getstatusoutput("ls -l")
+
+                if int(data[0]) == 0:
+                    serverData = str(data[1])
+                else:
+                    cmdResult = BAD_MSG
+                    serverData = BAD_MSG
+
+            elif clientMessage.startswith("get"):
+                fileName = clientMessage.replace("get", '').strip()
+
+                if os.path.exists(fileName):
+                    fileObj = open(fileName, "r")
+                    serverData = fileObj.read(65536)
+                    fileObj.close()
+                else:
+                    cmdResult = BAD_MSG
+                    serverData = BAD_MSG
+                
+            elif clientMessage.startswith("put"):
                 pass
-            elif str(data) == "get":
-                # TODO: Implement get cmd
-                pass
-            elif str(data) == "put":
-                # TODO: Implement put cmd
-                pass
+
             else:
-                serverMessage = "FAILURE"
-            
-            clientSock.send(serverMessage.encode())
+                cmdResult = BAD_MSG
+                serverData = BAD_MSG
+
+            print("{}: {}".format(cmdResult, clientMessage))
+
+            dataSizeStr = str(len(serverData))
+
+            while len(dataSizeStr) < 10:
+                dataSizeStr = "0" + dataSizeStr
+
+            sendData = dataSizeStr + serverData
+            numSent = 0
+
+            while len(sendData) > numSent:
+                numSent += clientSock.send(sendData[numSent:].encode(FORMAT))
+
+            if clientMessage == "quit":
+                break
 
         print("\nClient {} disconnected!\n".format(addr))
         clientSock.close()
-
 
 if __name__ == "__main__":
     main(sys.argv)
