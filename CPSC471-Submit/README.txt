@@ -2,7 +2,7 @@ Daniel Nazeri <dnazeri@csu.fullerton.edu>
 Kristofer Calma <calmakris@csu.fullerton.edu>
 Quang Nguyen <quangdnguyen2211@csu.fullerton.edu>
 Juan Ramirez Lopez <juanr2000@csu.fullerton.edu>
-Nathan Vu <>
+Nathan Vu <mr.nathanvu@csu.fullerton.edu>
 
 * Programming language used: Python
 
